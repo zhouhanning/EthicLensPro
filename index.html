@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EthicLens Pro | Data Analyst Ethics Review Board</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 font-sans text-slate-900 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
+        <div class="bg-slate-900 text-white p-6 flex flex-col md:flex-row md:items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-microchip text-indigo-400 mr-3"></i> EthicLens Pro
+                </h1>
+                <span class="text-sm text-slate-400 mt-1 block">Automated Ethics Review Board for Data Analysts</span>
+            </div>
+            <div class="mt-4 md:mt-0 text-xs font-mono bg-slate-800 p-2 rounded text-slate-300 border border-slate-700">
+                ACTIVE FRAMEWORKS: GDPR | SCIENTIFIC METHOD | PHILOSOPHY
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 min-h-[600px]">
+            <div class="lg:col-span-1 bg-slate-100 border-r border-slate-200 p-4">
+                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">AI Data Governance Cycle</h2>
+                <div class="space-y-2" id="stepButtons">
+                    </div>
+            </div>
+
+            <div class="lg:col-span-3 p-6 lg:p-8 hidden" id="resultsArea">
+                
+                <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 mb-6 rounded-r-lg">
+                    <p class="text-sm font-bold text-indigo-900 uppercase tracking-wider mb-1">System Signal</p>
+                    <p id="appSignal" class="text-lg text-indigo-800 font-medium"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100 shadow-sm">
+                        <h3 class="text-emerald-800 font-bold mb-3 flex items-center border-b border-emerald-200 pb-2">
+                            <i class="fas fa-check-circle mr-2"></i> Mandatory Actions
+                        </h3>
+                        <ul id="dosList" class="text-sm text-emerald-900 space-y-2 list-disc pl-5"></ul>
+                    </div>
+
+                    <div class="bg-red-50 p-5 rounded-xl border border-red-100 shadow-sm">
+                        <h3 class="text-red-800 font-bold mb-3 flex items-center border-b border-red-200 pb-2">
+                            <i class="fas fa-times-circle mr-2"></i> Strict Prohibitions
+                        </h3>
+                        <ul id="dontsList" class="text-sm text-red-900 space-y-2 list-disc pl-5"></ul>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 text-white p-5 rounded-xl shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center">
+                        <i class="fas fa-scale-balanced mr-2"></i> Ethical & Regulatory Standards
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-indigo-300 font-semibold mb-1">Primary Principle:</p>
+                            <p id="primaryStandard" class="text-slate-200 leading-relaxed"></p>
+                        </div>
+                        <div>
+                            <p class="text-indigo-300 font-semibold mb-1">Philosophical / Legal Basis:</p>
+                            <p id="legalBasis" class="text-slate-200 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="lg:col-span-3 p-8 flex flex-col items-center justify-center text-slate-400" id="emptyState">
+                <i class="fas fa-clipboard-check text-6xl mb-4 text-slate-300"></i>
+                <p class="text-lg font-medium text-slate-500">Select a project stage from the governance cycle to begin ethical triage.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const workflowData = {
+            'step1': {
+                title: 'Step 1: Inception & Triage',
+                signal: 'Is this project worth the ethical risk?',
+                dos: [
+                    'Use "Superforecasting" triage—focus on questions where hard work pays off.',
+                    'Decompose the problem into knowable sub-problems.',
+                    'Identify immediately if the system is "high-risk" (e.g., hiring or criminal justice).'
+                ],
+                donts: [
+                    'Do not proceed if the decision cannot be rationalized to others (Contractualism).',
+                    'Do not ignore the "front-page news" test.'
+                ],
+                standard: 'Evaluate the effect of data decisions on the wellbeing of all stakeholders, regardless of status.',
+                basis: 'Utilitarianism & Contractualism'
+            },
+            'step2': {
+                title: 'Step 2: Design & Pre-Registration',
+                signal: 'Define your parameters before you see the data.',
+                dos: [
+                    'Pre-register the study design, including all variables and statistical tests.',
+                    'Define the alpha/significance level and a strict data collection stopping rule in advance.'
+                ],
+                donts: [
+                    'Strictly prohibit HARKing (Hypothesizing After Results are Known).',
+                    'Do not engage in "sequential peeking" to manipulate statistical significance.',
+                    'Never lie with data, even if consequences are inconvenient.'
+                ],
+                standard: 'Methodological Rigor: Follow the chronological steps of the scientific method to prevent "researcher degrees of freedom" from inflating false positives.',
+                basis: 'Deontology & Scientific Integrity'
+            },
+            'step3': {
+                title: 'Step 3: Collection & Minimization',
+                signal: 'Are you collecting only what is strictly necessary?',
+                dos: [
+                    'Ensure consent is explicit, specific, and easy to revoke.',
+                    'Apply strict data minimization (adequate and relevant only).',
+                    'Execute a proportionality assessment if processing sensitive data (race, health) to balance accuracy vs. privacy.'
+                ],
+                donts: [
+                    'Do not collect data if you don\'t absolutely need it (The Privacy Golden Rule).',
+                    'Avoid "Dark Patterns" like obstruction or forced action in privacy settings.'
+                ],
+                standard: 'Processing must be lawful, fair, transparent, and limited to a specific purpose.',
+                basis: 'GDPR (Seven Core Principles) & Informed Consent'
+            },
+            'step4': {
+                title: 'Step 4: Processing & Anonymization',
+                signal: 'Check for re-identification risks.',
+                dos: [
+                    'Implement hashing for identifiers and group quasi-identifiers into "buckets".',
+                    'Add noise/perturbations to the dataset where appropriate.',
+                    'Evaluate the risk of "Linkage Attacks" from external datasets.'
+                ],
+                donts: [
+                    'Do not retain data longer than necessary (Storage Limitation).',
+                    'Do not assume standard anonymization is bulletproof against motivated adversaries.'
+                ],
+                standard: 'Secure the data and accept accountability. The best way to protect privacy is not to collect the data in the first place.',
+                basis: 'GDPR (Security & Storage Limitations)'
+            },
+            'step5': {
+                title: 'Step 5: Analysis & Bias Detection',
+                signal: 'Check for "Dirty Data" and historical bias.',
+                dos: [
+                    'Analyze training data for embedded biases (e.g., historical hiring patterns).',
+                    'Choose ONE fairness target: accurate predictions, equal false alarms, OR equal missed calls.',
+                    'Generate a transparency report on findings BEFORE any data deletions.'
+                ],
+                donts: [
+                    'Do not attempt to satisfy all three fairness targets if base rates differ (mathematically impossible).',
+                    'Strictly prohibit "tweaking" analysis (e.g., arbitrary outlier removal) to force results.'
+                ],
+                standard: 'Acknowledge mathematical constraints of fairness and report historical biases transparently.',
+                basis: 'Scientific Integrity & Anti-Fishing Standards'
+            },
+            'step6': {
+                title: 'Step 6: Visualization & Reporting',
+                signal: 'Calculate your Lie Factor.',
+                dos: [
+                    'Ensure representation of numbers is directly proportional to numerical quantities.',
+                    'Calculate the Lie Factor (size of effect in graphic / size of effect in data).',
+                    'Redesign immediately if the Lie Factor exceeds 1.05.'
+                ],
+                donts: [
+                    'Do not use misleading axes, truncated charts, or visual distortions.',
+                    'Do not violate established universalizable maxims of honest reporting.'
+                ],
+                standard: 'Adhere strictly to established rules of visual integrity; act as if the graphic will be scrutinized on the front page.',
+                basis: 'Deontology & Contractualism'
+            },
+            'step7': {
+                title: 'Step 7: Persuasion & Follow-Up',
+                signal: 'How will you advocate for these findings?',
+                dos: [
+                    'Use the ABCDEF method: Acknowledge goals, Be clear, Connect to values, Decrease uncertainty, Emphasize common ground, Follow up.',
+                    'Adapt ethical decisions to the specific context (boundary conditions).'
+                ],
+                donts: [
+                    'Do not misrepresent certainty; openly acknowledge limitations and margins of error.'
+                ],
+                standard: 'Persuasion must be grounded in shared values and absolute clarity, adjusting only where specific boundary conditions necessitate a change.',
+                basis: 'Particularism & The ABCDEF Framework'
+            }
+        };
+
+        // Initialize Sidebar Buttons
+        const buttonContainer = document.getElementById('stepButtons');
+        Object.keys(workflowData).forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = 'w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2';
+            btn.innerText = workflowData[key].title;
+            btn.onclick = () => loadStage(key, btn);
+            buttonContainer.appendChild(btn);
+        });
+
+        function loadStage(stageKey, activeBtn) {
+            // UI State management
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('resultsArea').classList.remove('hidden');
+            
+            // Highlight active button
+            document.querySelectorAll('#stepButtons button').forEach(b => {
+                b.classList.remove('bg-indigo-100', 'text-indigo-800', 'border-indigo-200');
+                b.classList.add('hover:bg-indigo-50', 'text-slate-700');
+            });
+            activeBtn.classList.remove('hover:bg-indigo-50', 'text-slate-700');
+            activeBtn.classList.add('bg-indigo-100', 'text-indigo-800', 'border-indigo-200');
+
+            // Populate data
+            const data = workflowData[stageKey];
+            document.getElementById('appSignal').innerText = `"${data.signal}"`;
+            document.getElementById('dosList').innerHTML = data.dos.map(d => `<li>${d}</li>`).join('');
+            document.getElementById('dontsList').innerHTML = data.donts.map(d => `<li>${d}</li>`).join('');
+            document.getElementById('primaryStandard').innerText = data.standard;
+            document.getElementById('legalBasis').innerText = data.basis;
+        }
+    </script>
+</body>
+</html>
