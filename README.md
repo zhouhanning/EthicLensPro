@@ -7,7 +7,8 @@
 * **Interactive Governance Cycle:** Navigate through the 7 essential stages of data project triage, design, collection, and analysis.
 * **Real-Time Ethical Signals:** Receive immediate "System Signals" that prompt critical thinking at each project stage.
 * **Actionable Guidance:** Clear, context-aware lists of Mandatory Actions (Dos) and Strict Prohibitions (Don'ts).
-* **Multi-Framework Integration:** * **Classical Philosophy:** Utilitarianism, Deontology, Contractualism, and Particularism.
+* **Multi-Framework Integration:**
+  * **Classical Philosophy:** Utilitarianism, Deontology, Contractualism, and Particularism.
   * **Regulatory Compliance:** GDPR (Articles 5, 6, 9, etc.), Informed Consent, and Privacy by Design.
   * **Scientific Integrity:** Anti-HARKing (Hypothesizing After Results are Known), bias mitigation, and statistical rigor.
 
