@@ -1,38 +1,61 @@
-# EthicLens Pro ⚖️
+# EthicLens Pro
 
-**EthicLens Pro** is an interactive, automated Ethics Review Board designed specifically for Data Analysts. It serves as a real-time compliance and ethics monitor, guiding users through the 7-step AI Data Governance Cycle while integrating classical philosophical frameworks, GDPR principles, and rigorous scientific methodologies.
+**Decision support for lawful, fair, and defensible analytics.**
 
-## 🚀 Features
+EthicLens Pro is a single-page web app that helps data analysts walk through an end-to-end **AI data governance cycle**, with reference material on **GDPR-aligned privacy**, **scientific integrity**, **bias and fairness**, and **AI risk / foresight**. It is intended as a structured checklist and learning aid—not a substitute for legal, compliance, or institutional review.
 
-* **Interactive Governance Cycle:** Navigate through the 7 essential stages of data project triage, design, collection, and analysis.
-* **Real-Time Ethical Signals:** Receive immediate "System Signals" that prompt critical thinking at each project stage.
-* **Actionable Guidance:** Clear, context-aware lists of Mandatory Actions (Dos) and Strict Prohibitions (Don'ts).
-* **Multi-Framework Integration:**
-  * **Classical Philosophy:** Utilitarianism, Deontology, Contractualism, and Particularism.
-  * **Regulatory Compliance:** GDPR (Articles 5, 6, 9, etc.), Informed Consent, and Privacy by Design.
-  * **Scientific Integrity:** Anti-HARKing (Hypothesizing After Results are Known), bias mitigation, and statistical rigor.
+## Features
 
-## 🛠️ Tech Stack
+- **Governance cycle (7 steps)** — For each stage: a guiding question (“system signal”), mandatory actions, strict prohibitions, primary principle, philosophical/legal basis, and an expandable **Rationale & context** section.
+- **Progress indicator** — Visual progress through the seven stages in the sidebar.
+- **Reference tabs**
+  - **Ethical frameworks** — Utilitarian, deontological, contractualist, and particularist lenses; social models of exchange; moral-psychology notes.
+  - **Privacy & GDPR** — Data-subject rights, principles, legal bases, sensitive categories, consent, re-identification risk, and privacy–utility trade-offs.
+  - **Bias & fairness** — Selection bias, proxy bias, fairness impossibility (conflicting error metrics), accountability.
+  - **Rigorous analysis** — Hypothesis testing order, Type I/II thinking, anti-patterns (e.g., HARKing, p-hacking), mitigations.
+  - **AI risk & foresight** — Framings of AI discourse, risk themes, structured forecasting practices.
+- **Quick checks** — Flip-card Q&A and a short interactive scenario (e.g., re-identification response).
 
-* **Frontend:** HTML5, Vanilla JavaScript
-* **Styling:** Tailwind CSS (via CDN)
-* **Icons:** FontAwesome
+## Tech stack
 
-## 📖 The 7-Step Workflow
+- **HTML5** + **vanilla JavaScript** (no build step)
+- **Tailwind CSS** (via CDN)
+- **Font Awesome 6** (via CDN)
 
-EthicLens Pro evaluates projects based on the following pipeline:
-1. **Inception & Triage:** Assessing ethical risk and project viability.
-2. **Design & Pre-Registration:** Defining parameters before data exposure.
-3. **Collection & Minimization:** Ensuring explicit consent and adequate, relevant data collection.
-4. **Processing & Anonymization:** Mitigating re-identification and linkage attacks.
-5. **Analysis & Bias Detection:** Identifying "Dirty Data" and historical biases.
-6. **Visualization & Reporting:** Calculating the "Lie Factor" for visual integrity.
-7. **Persuasion & Follow-Up:** Advocating for findings using the ABCDEF method.
+## Getting started
 
-## 💻 How to Run Locally
+### Run locally
 
-Since this is a lightweight, single-page application, no complex build tools or dependencies are required.
+1. Clone or download this repository.
+2. Open `index.html` in a modern browser (double-click, or use a local static server if you prefer).
 
-1. Clone this repository:
-   ```bash
-   git clone [https://github.com/yourusername/ethiclens-pro.git](https://github.com/yourusername/ethiclens-pro.git)
+Example with Python:
+
+```bash
+cd ethic
+python -m http.server 8080
+```
+
+Then visit `http://localhost:8080` in your browser.
+
+### Deploy to GitHub Pages
+
+1. Push this repository to GitHub.
+2. In the repo **Settings → Pages**, set the source to your default branch and `/ (root)` or the folder containing `index.html`.
+3. Your site will be served as static files; no build command is required.
+
+## Project structure
+
+```
+ethic/
+├── index.html    # Full application (markup, styles, scripts)
+└── README.md     # This file
+```
+
+## Disclaimer
+
+EthicLens Pro is an **educational and decision-support prototype**. It does not provide legal advice, regulatory certification, or approval for human-subjects research. Always follow your organization’s policies, applicable law (including GDPR where relevant), and ethics review requirements.
+
+## License
+
+Add a `LICENSE` file if you plan to open-source this project; until then, all rights are reserved unless you specify otherwise.
