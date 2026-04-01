@@ -3,203 +3,560 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EthicLens Pro | Data Analyst Ethics Review Board</title>
+    <title>EthicLens Pro | Ethics decision support for data analysts</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        .tab-active { border-color: rgb(99 102 241); background: rgb(238 242 255); color: rgb(55 48 163); }
+        .card-flip { perspective: 1000px; }
+        .card-flip-inner { transition: transform 0.55s ease; transform-style: preserve-3d; }
+        .card-flip.flipped .card-flip-inner { transform: rotateY(180deg); }
+        .card-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .card-back { transform: rotateY(180deg); }
+        @media (prefers-reduced-motion: reduce) {
+            .card-flip-inner { transition: none; }
+        }
+    </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-900 min-h-screen p-4 md:p-8">
 
     <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
-        <div class="bg-slate-900 text-white p-6 flex flex-col md:flex-row md:items-center justify-between">
+        <div class="bg-slate-900 text-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold flex items-center">
                     <i class="fas fa-microchip text-indigo-400 mr-3"></i> EthicLens Pro
                 </h1>
-                <span class="text-sm text-slate-400 mt-1 block">Automated Ethics Review Board for Data Analysts</span>
+                <span class="text-sm text-slate-400 mt-1 block">Decision support for lawful, fair, and defensible analytics</span>
             </div>
-            <div class="mt-4 md:mt-0 text-xs font-mono bg-slate-800 p-2 rounded text-slate-300 border border-slate-700">
-                ACTIVE FRAMEWORKS: GDPR | SCIENTIFIC METHOD | PHILOSOPHY
+            <div class="text-xs font-mono bg-slate-800 p-2 rounded text-slate-300 border border-slate-700 max-w-md text-right">
+                COVERAGE: GDPR · Scientific integrity · Fair ML · AI governance
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 min-h-[600px]">
-            <div class="lg:col-span-1 bg-slate-100 border-r border-slate-200 p-4">
-                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">AI Data Governance Cycle</h2>
-                <div class="space-y-2" id="stepButtons">
+        <!-- Main tabs -->
+        <div class="flex flex-wrap gap-1 p-3 bg-slate-100 border-b border-slate-200 overflow-x-auto" role="tablist" aria-label="Ethics reference sections">
+            <button type="button" data-tab="cycle" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap tab-active">Governance cycle</button>
+            <button type="button" data-tab="foundations" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white">Ethical frameworks</button>
+            <button type="button" data-tab="privacy" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white">Privacy &amp; GDPR</button>
+            <button type="button" data-tab="fairness" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white">Bias &amp; fairness</button>
+            <button type="button" data-tab="rigor" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white">Rigorous analysis</button>
+            <button type="button" data-tab="ai-risk" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white">AI risk &amp; foresight</button>
+            <button type="button" data-tab="quiz" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white"><i class="fas fa-bolt mr-1"></i> Quick checks</button>
+        </div>
+
+        <!-- TAB: Governance cycle -->
+        <div id="panel-cycle" class="tab-panel">
+            <div class="grid grid-cols-1 lg:grid-cols-4 min-h-[560px]">
+                <div class="lg:col-span-1 bg-slate-100 border-r border-slate-200 p-4">
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">AI data governance cycle</h2>
+                    <p class="text-xs text-slate-500 mb-4">Select a stage, then open <strong>Rationale &amp; context</strong> for deeper guidance on that step.</p>
+                    <div class="w-full bg-slate-200 rounded-full h-1.5 mb-4">
+                        <div id="cycleProgress" class="bg-indigo-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
+                    <div class="space-y-2" id="stepButtons"></div>
+                </div>
+
+                <div class="lg:col-span-3 p-6 lg:p-8 hidden" id="resultsArea">
+                    <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 mb-6 rounded-r-lg">
+                        <p class="text-sm font-bold text-indigo-900 uppercase tracking-wider mb-1">System signal</p>
+                        <p id="appSignal" class="text-lg text-indigo-800 font-medium"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100 shadow-sm">
+                            <h3 class="text-emerald-800 font-bold mb-3 flex items-center border-b border-emerald-200 pb-2">
+                                <i class="fas fa-check-circle mr-2"></i> Mandatory actions
+                            </h3>
+                            <ul id="dosList" class="text-sm text-emerald-900 space-y-2 list-disc pl-5"></ul>
+                        </div>
+                        <div class="bg-red-50 p-5 rounded-xl border border-red-100 shadow-sm">
+                            <h3 class="text-red-800 font-bold mb-3 flex items-center border-b border-red-200 pb-2">
+                                <i class="fas fa-times-circle mr-2"></i> Strict prohibitions
+                            </h3>
+                            <ul id="dontsList" class="text-sm text-red-900 space-y-2 list-disc pl-5"></ul>
+                        </div>
+                    </div>
+
+                    <details class="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm open:ring-2 open:ring-amber-300/30" id="rationalePanel" open>
+                        <summary class="cursor-pointer font-bold text-amber-900 flex items-center gap-2">
+                            <i class="fas fa-book-open"></i> Rationale &amp; context
+                        </summary>
+                        <div id="rationaleBody" class="mt-4 text-sm text-amber-950 space-y-3 prose prose-sm max-w-none"></div>
+                    </details>
+
+                    <div class="bg-slate-800 text-white p-5 rounded-xl shadow-sm">
+                        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center">
+                            <i class="fas fa-scale-balanced mr-2"></i> Ethical &amp; regulatory standards
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-indigo-300 font-semibold mb-1">Primary principle</p>
+                                <p id="primaryStandard" class="text-slate-200 leading-relaxed"></p>
+                            </div>
+                            <div>
+                                <p class="text-indigo-300 font-semibold mb-1">Philosophical / legal basis</p>
+                                <p id="legalBasis" class="text-slate-200 leading-relaxed"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 p-8 flex flex-col items-center justify-center text-slate-400" id="emptyState">
+                    <i class="fas fa-clipboard-check text-6xl mb-4 text-slate-300"></i>
+                    <p class="text-lg font-medium text-slate-500 text-center">Select a project stage from the governance cycle to begin ethical triage.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ethical frameworks -->
+        <div id="panel-foundations" class="tab-panel hidden p-6 lg:p-8 space-y-6">
+            <h2 class="text-xl font-bold text-slate-800">Ethical frameworks</h2>
+            <p class="text-slate-600 text-sm max-w-3xl">Philosophy gives norms; social science explains how people react to broken exchange norms; cognitive science reminds us that moral judgment is often intuitive and emotional.</p>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <details class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm">
+                    <summary class="font-semibold text-indigo-900 cursor-pointer">Utilitarianism (Bentham)</summary>
+                    <p class="mt-2 text-sm text-slate-700">Greatest good for the greatest number. Watch for: measuring happiness, ignoring individual rights, aggregation puzzles, unforeseen consequences, and cognitive load of forecasting all outcomes.</p>
+                </details>
+                <details class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm">
+                    <summary class="font-semibold text-indigo-900 cursor-pointer">Deontology (Kant)</summary>
+                    <p class="mt-2 text-sm text-slate-700">Act only on maxims you can will as universal law. Tensions: rigidity vs. consequences, conflicting duties, difficulty defining universalizable rules, underestimation of emotion.</p>
+                </details>
+                <details class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm">
+                    <summary class="font-semibold text-indigo-900 cursor-pointer">Contractualism (Scanlon)</summary>
+                    <p class="mt-2 text-sm text-slate-700">Could you justify this to others on grounds they could reasonably accept? Challenges: aggregation, who is in the “contract,” power asymmetries, practical demands under time pressure.</p>
+                </details>
+                <details class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm">
+                    <summary class="font-semibold text-indigo-900 cursor-pointer">Particularism (Dancy)</summary>
+                    <p class="mt-2 text-sm text-slate-700">A feature that helps in one case may hurt in another. Principles are “crutches.” Risks: inconsistency, subjectivity, overlooking similarities across cases.</p>
+                </details>
             </div>
 
-            <div class="lg:col-span-3 p-6 lg:p-8 hidden" id="resultsArea">
-                
-                <div class="bg-indigo-50 border-l-4 border-indigo-600 p-4 mb-6 rounded-r-lg">
-                    <p class="text-sm font-bold text-indigo-900 uppercase tracking-wider mb-1">System Signal</p>
-                    <p id="appSignal" class="text-lg text-indigo-800 font-medium"></p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100 shadow-sm">
-                        <h3 class="text-emerald-800 font-bold mb-3 flex items-center border-b border-emerald-200 pb-2">
-                            <i class="fas fa-check-circle mr-2"></i> Mandatory Actions
-                        </h3>
-                        <ul id="dosList" class="text-sm text-emerald-900 space-y-2 list-disc pl-5"></ul>
-                    </div>
-
-                    <div class="bg-red-50 p-5 rounded-xl border border-red-100 shadow-sm">
-                        <h3 class="text-red-800 font-bold mb-3 flex items-center border-b border-red-200 pb-2">
-                            <i class="fas fa-times-circle mr-2"></i> Strict Prohibitions
-                        </h3>
-                        <ul id="dontsList" class="text-sm text-red-900 space-y-2 list-disc pl-5"></ul>
-                    </div>
-                </div>
-
-                <div class="bg-slate-800 text-white p-5 rounded-xl shadow-sm">
-                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 flex items-center">
-                        <i class="fas fa-scale-balanced mr-2"></i> Ethical & Regulatory Standards
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p class="text-indigo-300 font-semibold mb-1">Primary Principle:</p>
-                            <p id="primaryStandard" class="text-slate-200 leading-relaxed"></p>
-                        </div>
-                        <div>
-                            <p class="text-indigo-300 font-semibold mb-1">Philosophical / Legal Basis:</p>
-                            <p id="legalBasis" class="text-slate-200 leading-relaxed"></p>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="bg-slate-100 rounded-xl p-5 border border-slate-200">
+                <h3 class="font-bold text-slate-800 mb-2"><span class="text-indigo-600">Integrated analyst lens</span></h3>
+                <p class="text-xs text-slate-500 mb-2">Blend multiple traditions—no single theory fits every deployment.</p>
+                <ul class="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                    <li><strong>Utilitarian:</strong> Consider effects on wellbeing of multiple stakeholders, regardless of status.</li>
+                    <li><strong>Deontology:</strong> Build repeatable rules; look for what generalizes across situations.</li>
+                    <li><strong>Contractualism:</strong> Could you rationalize this if it were front-page news? What would PR advise?</li>
+                    <li><strong>Particularism:</strong> Adapt to context; state boundary conditions—if X changes, your decision may change.</li>
+                </ul>
             </div>
-            
-            <div class="lg:col-span-3 p-8 flex flex-col items-center justify-center text-slate-400" id="emptyState">
-                <i class="fas fa-clipboard-check text-6xl mb-4 text-slate-300"></i>
-                <p class="text-lg font-medium text-slate-500">Select a project stage from the governance cycle to begin ethical triage.</p>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <h3 class="font-bold text-slate-800 mb-2">Social science · Exchange models (Fiske &amp; Tetlock)</h3>
+                    <ul class="text-sm text-slate-700 space-y-1">
+                        <li><strong>Communal sharing</strong> — undifferentiated access (e.g., clean air, family).</li>
+                        <li><strong>Authority ranking</strong> — order among people or goods (seniority, class).</li>
+                        <li><strong>Equality matching</strong> — tit-for-tat reciprocity.</li>
+                        <li><strong>Market pricing</strong> — ratios and trade-offs across diverse goods.</li>
+                    </ul>
+                    <p class="text-sm text-slate-600 mt-3">Mixing models (e.g., pricing a communal good) causes outrage, concealment, or buck-passing. Mitigations: explicit committees for taboo trade-offs, protected bodies, open alternatives, validating discomfort.</p>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <h3 class="font-bold text-slate-800 mb-2">Cognitive science · Moral foundations (Haidt et al.)</h3>
+                    <p class="text-sm text-slate-700 mb-2">Judgments are often emotional and fast. Six pillars include care/harm, fairness/cheating, liberty/oppression, loyalty/betrayal, authority/subversion, sanctity/degradation.</p>
+                    <p class="text-sm text-slate-600">For analysts: classical theories map to processes you will face; broken exchange norms drive outrage and obfuscation; gut reactions matter in stakeholder meetings.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy & GDPR -->
+        <div id="panel-privacy" class="tab-panel hidden p-6 lg:p-8 space-y-6">
+            <h2 class="text-xl font-bold text-slate-800">Privacy &amp; data protection (GDPR-aligned)</h2>
+            <p class="text-sm text-slate-600 max-w-3xl">Lawful processing rests on principles, legal bases, and meaningful consent. Technical privacy is a trade-off between protection and analytic usefulness.</p>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-100 text-slate-700">
+                        <tr><th class="text-left p-3">Six data-subject rights (Article)</th><th class="text-left p-3">Idea</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr><td class="p-3 font-mono text-xs">15 Access</td><td class="p-3">See data and how it is used</td></tr>
+                        <tr><td class="p-3 font-mono text-xs">16 Rectification</td><td class="p-3">Correct inaccurate data</td></tr>
+                        <tr><td class="p-3 font-mono text-xs">17 Erasure</td><td class="p-3">“Right to be forgotten” when lawful</td></tr>
+                        <tr><td class="p-3 font-mono text-xs">18 Processing</td><td class="p-3">Restrict certain analysis/use</td></tr>
+                        <tr><td class="p-3 font-mono text-xs">20 Portability</td><td class="p-3">Receive/share your data</td></tr>
+                        <tr><td class="p-3 font-mono text-xs">22 Automated decisions</td><td class="p-3">Limits on profiling without safeguards/consent</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                    <h3 class="font-bold text-emerald-900 mb-2">Seven principles</h3>
+                    <ol class="text-sm text-emerald-950 list-decimal pl-5 space-y-1">
+                        <li>Legal, fair, transparent</li>
+                        <li>Purpose limitation (specific, explicit consent)</li>
+                        <li>Data minimization</li>
+                        <li>Accuracy</li>
+                        <li>Storage limitation &amp; de-identification</li>
+                        <li>Security</li>
+                        <li>Accountability</li>
+                    </ol>
+                </div>
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                    <h3 class="font-bold text-indigo-900 mb-2">Six legal grounds for processing</h3>
+                    <ol class="text-sm text-indigo-950 list-decimal pl-5 space-y-1">
+                        <li>Consent</li>
+                        <li>Contract</li>
+                        <li>Legal obligation</li>
+                        <li>Vital interests</li>
+                        <li>Public interest task</li>
+                        <li>Legitimate interest (balance test)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <h3 class="font-bold text-amber-900 mb-2">Eight sensitive categories</h3>
+                <p class="text-sm text-amber-950">Racial/ethnic origin · Political opinions · Religion/philosophy · Trade union · Genetic · Biometric · Health · Sex life/orientation</p>
+            </div>
+
+            <details class="border border-slate-200 rounded-xl p-4">
+                <summary class="font-semibold cursor-pointer">Consent must include…</summary>
+                <ul class="mt-3 text-sm text-slate-700 list-disc pl-5 space-y-1">
+                    <li>Plain language; distinguishable from other text; easy access</li>
+                    <li>Risks/benefits; voluntary participation; how to revoke</li>
+                    <li>Controller identity; purposes and legal basis; recipients/third parties</li>
+                    <li>DPO contact when applicable</li>
+                </ul>
+            </details>
+
+            <div class="bg-slate-100 rounded-xl p-5 border border-slate-200">
+                <h3 class="font-bold text-slate-800 mb-2">Transparency paradox</h3>
+                <p class="text-sm text-slate-700">More detail increases transparency on paper but can reduce reading and comprehension—seek a usable “sweet spot.”</p>
+                <p class="text-sm text-slate-700 mt-2"><strong>Privacy golden rule:</strong> Best protection is not to collect data; if you must, collect only what you need.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white border rounded-xl p-4 shadow-sm">
+                    <h3 class="font-bold mb-2">Attacks &amp; defenses</h3>
+                    <p class="text-sm text-slate-700"><strong>Hacking/leaks:</strong> encryption, security—primarily engineering.</p>
+                    <p class="text-sm text-slate-700 mt-2"><strong>Re-identification / linkage:</strong> quasi-identifiers + background knowledge. Mitigations: bucketing, perturbation, hashing, k-anonymity, differential privacy (centralized or decentralized).</p>
+                </div>
+                <div class="bg-white border rounded-xl p-4 shadow-sm">
+                    <h3 class="font-bold mb-2">Sweeney (2000) — U.S. uniqueness</h3>
+                    <p class="text-sm text-slate-700">High shares of people are unique from few fields (e.g., ZIP, gender, DOB). “Anonymous” data is rarely truly anonymous against a motivated adversary.</p>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-500">Reference cases: public datasets re-identified via linkage (e.g., ratings + external profiles; query logs + geography). Adding noise trades utility for protection—document that trade-off.</p>
+        </div>
+
+        <!-- Bias & fairness -->
+        <div id="panel-fairness" class="tab-panel hidden p-6 lg:p-8 space-y-6">
+            <h2 class="text-xl font-bold text-slate-800">Sample bias &amp; algorithmic fairness</h2>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-2">Selection bias (broad)</h3>
+                <p class="text-sm text-slate-700 mb-2">Non-random samples skew conclusions (e.g., Literary Digest 1936; Twitter not representing the public).</p>
+                <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                    <li><strong>Survivorship bias</strong> — only successes observed (e.g., “traits of billionaires”).</li>
+                    <li><strong>Non-response bias</strong> — who opts out systematically differs.</li>
+                    <li><strong>Self-selection</strong> — volunteers differ (e.g., psych study volunteers scoring higher on narcissism measures).</li>
+                </ul>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+                    <h3 class="font-bold text-red-900 mb-2">Amazon hiring algorithm</h3>
+                    <p class="text-sm text-red-950">Training on past hires encoded historical bias. Dropping race/gender from inputs does not remove bias embedded in labels and proxies.</p>
+                </div>
+                <div class="bg-slate-800 text-white rounded-xl p-4">
+                    <h3 class="font-bold mb-2 text-indigo-200">COMPAS &amp; ProPublica</h3>
+                    <p class="text-sm text-slate-200">Black defendants flagged high-risk without re-offending at roughly twice the rate of white defendants; white defendants labeled low-risk re-offended at higher rates. Different error types carry different moral costs.</p>
+                </div>
+            </div>
+
+            <div class="border-2 border-indigo-200 rounded-xl p-5 bg-indigo-50/50">
+                <h3 class="font-bold text-indigo-900 mb-3">Fairness paradox (Chouldechova, 2017)</h3>
+                <p class="text-sm text-slate-800 mb-3">When base rates differ, three reasonable fairness goals cannot all hold:</p>
+                <ol class="text-sm text-slate-800 list-decimal pl-5 space-y-2">
+                    <li><strong>Calibration / accuracy</strong> — among those labeled high-risk, equal fraction actually “positive.”</li>
+                    <li><strong>Equal false positives</strong> — innocent people flagged at equal rates across groups.</li>
+                    <li><strong>Equal false negatives</strong> — risky people missed at equal rates across groups.</li>
+                </ol>
+                <p class="text-sm text-slate-700 mt-3">Fixing one definition often breaks another—this is a <strong>values</strong> choice about which harm is least acceptable, not a purely technical bug.</p>
+            </div>
+
+            <div class="bg-slate-100 rounded-xl p-4 border border-slate-200">
+                <h3 class="font-bold text-slate-800 mb-2">Systems view</h3>
+                <p class="text-sm text-slate-700">Over-policing produces arrest data that inflates apparent crime rates; feedback loops reinforce records. GDPR-compliant data can still yield discriminatory outcomes. <strong>Accountability:</strong> “The algorithm decided” does not transfer ethical responsibility.</p>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <button type="button" id="fairnessFlipBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">Flip: fairness trade-off reminder</button>
+            </div>
+            <p id="fairnessFlipNote" class="text-sm text-slate-600 hidden">Pick ONE primary fairness target to optimize and document; communicate impossibility of satisfying all three when priors differ; audit who bears false positives vs. false negatives.</p>
+        </div>
+
+        <!-- Rigorous analysis -->
+        <div id="panel-rigor" class="tab-panel hidden p-6 lg:p-8 space-y-6">
+            <h2 class="text-xl font-bold text-slate-800">Rigorous analysis &amp; integrity</h2>
+            <p class="text-sm text-slate-600">Chronological hypothesis testing limits “researcher degrees of freedom.” Violations (p-hacking, HARKing) inflate false positives—especially seductive with big data and stakeholder pressure.</p>
+
+            <ol class="list-decimal pl-5 space-y-2 text-sm text-slate-800 bg-white border border-slate-200 rounded-xl p-5">
+                <li>Exploration (almost anything goes—then stop and pre-commit)</li>
+                <li>State null and alternative hypotheses</li>
+                <li>Design experiment: variables, controls, interactions, sample size</li>
+                <li>Choose test statistic, alpha (Type I rate), plan</li>
+                <li>Collect data per protocol</li>
+                <li>Analyze; run tests</li>
+                <li>Interpret—tolerate ambiguous null results</li>
+            </ol>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white border rounded-xl p-4 shadow-sm">
+                    <h3 class="font-bold mb-2">Type I vs Type II</h3>
+                    <p class="text-sm text-slate-700">Alpha = tolerated chance of false positive (declaring an effect when none exists). Trade-offs mirror policy: is a false “drug works” worse than missing a real effect?</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <h3 class="font-bold text-amber-900 mb-2">Anti-patterns — avoid these</h3>
+                    <ul class="text-sm list-disc pl-5 space-y-1 text-amber-950">
+                        <li>Endless exploration; maximal flexible design</li>
+                        <li>HARKing—hypothesize after results known</li>
+                        <li>Cherry-pick trials or drop data</li>
+                        <li>Peek until significant; tweak outliers, missingness, specs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 text-slate-100 rounded-xl p-5">
+                <h3 class="font-bold text-indigo-300 mb-2">Ways to reduce false positives</h3>
+                <ul class="text-sm space-y-1 list-disc pl-5">
+                    <li>Pre-register; fix stopping rules</li>
+                    <li>Report all variables collected; document deletions (e.g., outliers)</li>
+                    <li>Share data and methods; replicate</li>
+                    <li>Bonferroni / alpha correction (watch remaining degrees of freedom)</li>
+                </ul>
+                <p class="text-sm text-slate-300 mt-3 italic">Replication research: a single study rarely gives definitive certainty—progress comes from reducing uncertainty over time.</p>
+            </div>
+
+            <p class="text-xs text-slate-500">LLMs under subtle prompts can mimic “specification search” and inflate significance—treat automated analysis as needing the same constraints as human analysis.</p>
+        </div>
+
+        <!-- AI risk & foresight -->
+        <div id="panel-ai-risk" class="tab-panel hidden p-6 lg:p-8 space-y-6">
+            <h2 class="text-xl font-bold text-slate-800">AI risk &amp; structured foresight</h2>
+
+            <div class="grid sm:grid-cols-2 gap-3">
+                <div class="border rounded-xl p-4 bg-slate-50"><strong class="text-red-800">Doomers</strong><p class="text-sm text-slate-700 mt-1">Existential risk; pause or stop.</p></div>
+                <div class="border rounded-xl p-4 bg-slate-50"><strong class="text-orange-800">Gloomers</strong><p class="text-sm text-slate-700 mt-1">Near-term harms; heavy regulation.</p></div>
+                <div class="border rounded-xl p-4 bg-slate-50"><strong class="text-amber-800">Zoomers</strong><p class="text-sm text-slate-700 mt-1">Maximize speed; minimal rules.</p></div>
+                <div class="border rounded-xl p-4 bg-indigo-50 border-indigo-200"><strong class="text-indigo-900">Bloomers</strong><p class="text-sm text-slate-700 mt-1">Transformative but iterative; public engagement + smart guardrails.</p></div>
+            </div>
+
+            <details class="border border-slate-200 rounded-xl p-4">
+                <summary class="font-semibold cursor-pointer">Gloomy risk themes (expand)</summary>
+                <ul class="mt-3 text-sm text-slate-700 grid sm:grid-cols-2 gap-2 list-disc pl-5">
+                    <li>Safety: misalignment, lethal autonomy</li>
+                    <li>Work: displacement, inequality, deskilling</li>
+                    <li>Bias: hiring, credit, COMPAS-scale effects</li>
+                    <li>Privacy: surveillance, facial recognition</li>
+                    <li>Info: deepfakes, epistemic fragmentation</li>
+                    <li>Governance: black boxes, liability, regulatory lag</li>
+                </ul>
+            </details>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-3">Structured forecasting (Tetlock-style) — core practices</h3>
+                <ol class="text-sm text-slate-700 list-decimal pl-5 space-y-2 max-h-64 overflow-y-auto">
+                    <li>Triage to questions where effort pays off</li>
+                    <li>Decompose into knowable vs unknowable</li>
+                    <li>Balance inside vs outside view (base rates first)</li>
+                    <li>Update beliefs gradually on new evidence</li>
+                    <li>Map clashing causal forces (“dragonfly eye”)</li>
+                    <li>Use granular probabilities, not vague words</li>
+                    <li>Balance humility and decisiveness</li>
+                    <li>Postmortems on failures and successes</li>
+                    <li>Team perspective-taking and precision questioning</li>
+                    <li>Practice with unambiguous feedback loops</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- TAB: Quiz -->
+        <div id="panel-quiz" class="tab-panel hidden p-6 lg:p-8">
+            <h2 class="text-xl font-bold text-slate-800 mb-2">Quick checks (flashcards)</h2>
+            <p class="text-sm text-slate-600 mb-6">Click the card to reveal the answer. Use arrows to move through the deck.</p>
+
+            <div class="max-w-lg mx-auto">
+                <div class="card-flip relative h-56 cursor-pointer mb-4" id="flashcard" role="button" tabindex="0" aria-label="Flashcard. Click to flip.">
+                    <div class="card-flip-inner relative w-full h-full">
+                        <div class="card-face absolute inset-0 rounded-xl border-2 border-indigo-200 bg-indigo-50 p-6 flex items-center justify-center text-center shadow-md">
+                            <p id="fcFront" class="text-lg font-medium text-indigo-950"></p>
+                        </div>
+                        <div class="card-face card-back absolute inset-0 rounded-xl border-2 border-emerald-200 bg-emerald-50 p-6 flex items-center justify-center text-center shadow-md">
+                            <p id="fcBack" class="text-sm text-emerald-950"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center gap-2">
+                    <button type="button" id="fcPrev" class="px-4 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Previous</button>
+                    <span id="fcIndex" class="text-sm text-slate-500"></span>
+                    <button type="button" id="fcNext" class="px-4 py-2 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">Next</button>
+                </div>
+            </div>
+
+            <div class="mt-10 max-w-xl mx-auto border-t border-slate-200 pt-8">
+                <h3 class="font-bold text-slate-800 mb-4">Scenario picker (interactive)</h3>
+                <label class="block text-sm font-medium text-slate-700 mb-2">You discover quasi-identifiers could re-identify individuals in an “anonymized” health table. First step?</label>
+                <select id="scenarioSelect" class="w-full border border-slate-300 rounded-lg p-2 text-sm mb-3">
+                    <option value="">Choose…</option>
+                    <option value="wrong1">Publish immediately for transparency</option>
+                    <option value="wrong2">Only remove names; assume that is enough</option>
+                    <option value="right">Assess linkage risk, bucket/perturb, consult DPO/IRB, minimize release</option>
+                </select>
+                <p id="scenarioFeedback" class="text-sm text-slate-600 min-h-[3rem]"></p>
             </div>
         </div>
     </div>
 
     <script>
         const workflowData = {
-            'step1': {
-                title: 'Step 1: Inception & Triage',
-                signal: 'Is this project worth the ethical risk?',
+            step1: {
+                title: 'Step 1: Inception & triage',
+                signal: 'Is this project worth the ethical risk? Where will hard work actually pay off?',
                 dos: [
-                    'Use "Superforecasting" triage—focus on questions where hard work pays off.',
-                    'Decompose the problem into knowable sub-problems.',
-                    'Identify immediately if the system is "high-risk" (e.g., hiring or criminal justice).'
+                    'Use superforecasting-style triage: focus effort on questions that are neither trivial nor impenetrable.',
+                    'Decompose the decision into sub-problems; flush ignorance into the open.',
+                    'Flag high-risk domains early (hiring, criminal justice, credit, health).'
                 ],
                 donts: [
-                    'Do not proceed if the decision cannot be rationalized to others (Contractualism).',
-                    'Do not ignore the "front-page news" test.'
+                    'Do not proceed if you could not justify the choice to affected others (contractualism / front-page test).',
+                    'Do not treat “unique” cases as devoid of base rates—balance inside and outside views.'
                 ],
-                standard: 'Evaluate the effect of data decisions on the wellbeing of all stakeholders, regardless of status.',
-                basis: 'Utilitarianism & Contractualism'
+                standard: 'Weigh consequences for all stakeholders, including those with less power; name whose harm you are optimizing.',
+                basis: 'Utilitarian & contractualist lenses; triage methods from structured forecasting',
+                rationale: `<p><strong>Framework toolkit:</strong> Consequentialist (stakeholder wellbeing), deontological (repeatable rules), contractualist (justify to others), contextual (boundary conditions).</p>
+                <p><strong>Organizational behavior:</strong> Mismatched “exchange models” (communal vs market) provoke outrage or hidden trade-offs—name the relationship you are in.</p>
+                <p><strong>Psychology:</strong> Moral reactions are often fast and emotional—build processes, not only gut checks.</p>`
             },
-            'step2': {
-                title: 'Step 2: Design & Pre-Registration',
-                signal: 'Define your parameters before you see the data.',
+            step2: {
+                title: 'Step 2: Design & pre-registration',
+                signal: 'Define hypotheses, variables, and error tolerance before you “peek” at outcomes.',
                 dos: [
-                    'Pre-register the study design, including all variables and statistical tests.',
-                    'Define the alpha/significance level and a strict data collection stopping rule in advance.'
+                    'State null and alternative hypotheses; list variables, controls, interactions, and sample size.',
+                    'Choose alpha and a data-collection stopping rule in advance.',
+                    'Document exploration separately from confirmatory analysis.'
                 ],
                 donts: [
-                    'Strictly prohibit HARKing (Hypothesizing After Results are Known).',
-                    'Do not engage in "sequential peeking" to manipulate statistical significance.',
-                    'Never lie with data, even if consequences are inconvenient.'
+                    'No HARKing—hypothesizing after results are known.',
+                    'No endless flexible specs to please stakeholders (“find something significant”).'
                 ],
-                standard: 'Methodological Rigor: Follow the chronological steps of the scientific method to prevent "researcher degrees of freedom" from inflating false positives.',
-                basis: 'Deontology & Scientific Integrity'
+                standard: 'Chronological integrity: exploration is allowed, then you pre-commit to a testable plan.',
+                basis: 'Hypothesis-testing discipline; deontology & scientific integrity',
+                rationale: `<p><strong>Why it matters:</strong> Many published effects fail replication; flexible analysis inflates false positives.</p>
+                <ul class="list-disc pl-5 space-y-1"><li>Stakeholder pressure often rewards “exciting” findings.</li><li>Automated tools can accelerate specification search—apply the same constraints as with manual analysis.</li></ul>`
             },
-            'step3': {
-                title: 'Step 3: Collection & Minimization',
-                signal: 'Are you collecting only what is strictly necessary?',
+            step3: {
+                title: 'Step 3: Collection & minimization',
+                signal: 'Are you collecting only what is necessary, with a lawful basis and real consent?',
                 dos: [
-                    'Ensure consent is explicit, specific, and easy to revoke.',
-                    'Apply strict data minimization (adequate and relevant only).',
-                    'Execute a proportionality assessment if processing sensitive data (race, health) to balance accuracy vs. privacy.'
+                    'Match processing to a legal ground (consent, contract, legitimate interest, etc.).',
+                    'Consent: plain language, voluntary, revocable; disclose purposes and third parties.',
+                    'Minimize fields; extra sensitivity triggers stricter rules and DPIAs.'
                 ],
                 donts: [
-                    'Do not collect data if you don\'t absolutely need it (The Privacy Golden Rule).',
-                    'Avoid "Dark Patterns" like obstruction or forced action in privacy settings.'
+                    'Do not bury consent in opaque walls of text (transparency paradox).',
+                    'Do not demand data unrelated to the service as a condition of use unless strictly necessary.'
                 ],
-                standard: 'Processing must be lawful, fair, transparent, and limited to a specific purpose.',
-                basis: 'GDPR (Seven Core Principles) & Informed Consent'
+                standard: 'Lawful, fair, transparent; purpose limitation; minimization.',
+                basis: 'GDPR Articles 5–7, 9; consent & lawful-basis checklists',
+                rationale: `<p><strong>Sensitive categories (8):</strong> race/ethnicity, politics, religion, union, genetic, biometric, health, sex life/orientation.</p>
+                <p><strong>Privacy golden rule:</strong> best protection is not to collect; else collect only what you need.</p>`
             },
-            'step4': {
-                title: 'Step 4: Processing & Anonymization',
-                signal: 'Check for re-identification risks.',
+            step4: {
+                title: 'Step 4: Processing & anonymization',
+                signal: 'Assume motivated re-identification. Where is linkage risk?',
                 dos: [
-                    'Implement hashing for identifiers and group quasi-identifiers into "buckets".',
-                    'Add noise/perturbations to the dataset where appropriate.',
-                    'Evaluate the risk of "Linkage Attacks" from external datasets.'
+                    'Hash or remove direct identifiers; bucket quasi-identifiers; consider k-anonymity goals.',
+                    'Add noise where appropriate (differential privacy in sensitive surveys).',
+                    'Encrypt, segment access, retention schedules—security is your responsibility.'
                 ],
                 donts: [
-                    'Do not retain data longer than necessary (Storage Limitation).',
-                    'Do not assume standard anonymization is bulletproof against motivated adversaries.'
+                    'Do not assume “no name” means anonymous (Sweeney: ZIP + DOB + gender uniquely identifies many).',
+                    'Do not release rich longitudinal behavior without assessing linkage attacks (streaming ratings, search logs, mobility).'
                 ],
-                standard: 'Secure the data and accept accountability. The best way to protect privacy is not to collect the data in the first place.',
-                basis: 'GDPR (Security & Storage Limitations)'
+                standard: 'Balance privacy protection with analytic utility; document residual risk.',
+                basis: 'Linkage risk vs. security breaches; accountability principle',
+                rationale: `<p><strong>Two attack types:</strong> hacking/leaks (engineering) vs re-identification (analyst responsibility).</p>
+                <p><strong>Methods trade-offs:</strong> hashing (merge difficulty), grouping (precision loss), perturbation (complexity), removal (information loss).</p>`
             },
-            'step5': {
-                title: 'Step 5: Analysis & Bias Detection',
-                signal: 'Check for "Dirty Data" and historical bias.',
+            step5: {
+                title: 'Step 5: Analysis & bias detection',
+                signal: 'Sample bias + labels + base rates = fairness constraints, not a single “fairness button.”',
                 dos: [
-                    'Analyze training data for embedded biases (e.g., historical hiring patterns).',
-                    'Choose ONE fairness target: accurate predictions, equal false alarms, OR equal missed calls.',
-                    'Generate a transparency report on findings BEFORE any data deletions.'
+                    'Audit representation: survivorship, non-response, self-selection.',
+                    'Document that dropping protected attributes does not erase proxy bias (historical labels still encode bias).',
+                    'Choose and justify ONE primary fairness target; report trade-offs (calibration vs FPR vs FNR).'
                 ],
                 donts: [
-                    'Do not attempt to satisfy all three fairness targets if base rates differ (mathematically impossible).',
-                    'Strictly prohibit "tweaking" analysis (e.g., arbitrary outlier removal) to force results.'
+                    'Do not promise all fairness definitions at once when base rates differ—mathematically impossible.',
+                    'Do not ignore feedback loops (policing → arrests → training data).'
                 ],
-                standard: 'Acknowledge mathematical constraints of fairness and report historical biases transparently.',
-                basis: 'Scientific Integrity & Anti-Fishing Standards'
+                standard: 'Transparency about errors and who bears them; human accountability for deployment.',
+                basis: 'Fairness impossibility results (e.g., Chouldechova); public audits of risk scores',
+                rationale: `<p><strong>Documented pattern:</strong> unequal false positives and false negatives across groups under a calibrated-looking score.</p>
+                <p><strong>Values question:</strong> which error is more harmful for this context?</p>`
             },
-            'step6': {
-                title: 'Step 6: Visualization & Reporting',
-                signal: 'Calculate your Lie Factor.',
+            step6: {
+                title: 'Step 6: Visualization & reporting',
+                signal: 'Graphics and narratives carry authority—keep the lie factor near 1.',
                 dos: [
-                    'Ensure representation of numbers is directly proportional to numerical quantities.',
-                    'Calculate the Lie Factor (size of effect in graphic / size of effect in data).',
-                    'Redesign immediately if the Lie Factor exceeds 1.05.'
+                    'Proportional ink; honest axes; show uncertainty.',
+                    'Pre-register what you will report; separate exploratory plots from confirmatory claims.'
                 ],
                 donts: [
-                    'Do not use misleading axes, truncated charts, or visual distortions.',
-                    'Do not violate established universalizable maxims of honest reporting.'
+                    'No truncating axes to exaggerate; no cherry-picked windows.',
+                    'Do not let “sciencey” visuals launder p-hacked results.'
                 ],
-                standard: 'Adhere strictly to established rules of visual integrity; act as if the graphic will be scrutinized on the front page.',
-                basis: 'Deontology & Contractualism'
+                standard: 'Visual and verbal honesty; audience can reconstruct your reasoning.',
+                basis: 'Deontology & contractualism (public-scrutiny test); narrative power of metrics',
+                rationale: `<p>Analysts combine storytelling with the cultural authority of “data.” That raises the cost of exaggeration.</p>`
             },
-            'step7': {
-                title: 'Step 7: Persuasion & Follow-Up',
-                signal: 'How will you advocate for these findings?',
+            step7: {
+                title: 'Step 7: Persuasion & follow-up',
+                signal: 'How do you communicate limits, conflict frames, and governance choices?',
                 dos: [
-                    'Use the ABCDEF method: Acknowledge goals, Be clear, Connect to values, Decrease uncertainty, Emphasize common ground, Follow up.',
-                    'Adapt ethical decisions to the specific context (boundary conditions).'
+                    'ABCDEF-style communication: acknowledge goals, clarify, connect to values, reduce uncertainty, common ground, follow up.',
+                    'For AI risk: distinguish doom/gloom/zoom/bloom framings; clarify which near-term harms you mitigate.',
+                    'Assign ownership—algorithms do not absolve responsibility.'
                 ],
                 donts: [
-                    'Do not misrepresent certainty; openly acknowledge limitations and margins of error.'
+                    'Do not fake certainty; report CIs, known unknowns, and scenario assumptions.',
+                    'Do not outsource ethics to “the model decided.”'
                 ],
-                standard: 'Persuasion must be grounded in shared values and absolute clarity, adjusting only where specific boundary conditions necessitate a change.',
-                basis: 'Particularism & The ABCDEF Framework'
+                standard: 'Persuasion grounded in shared values with explicit limits and accountability.',
+                basis: 'Context-sensitive ethics; AI risk framing & structured forecasting habits',
+                rationale: `<p><strong>Governance reality:</strong> black-box risk, liability gaps, regulatory lag—say so explicitly.</p>
+                <p><strong>Foresight:</strong> granular probabilities, update with evidence, team critique.</p>`
             }
         };
 
-        // Initialize Sidebar Buttons
+        const stepKeys = Object.keys(workflowData);
         const buttonContainer = document.getElementById('stepButtons');
-        Object.keys(workflowData).forEach(key => {
+        stepKeys.forEach((key, i) => {
             const btn = document.createElement('button');
             btn.className = 'w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2';
-            btn.innerText = workflowData[key].title;
+            btn.textContent = workflowData[key].title;
             btn.onclick = () => loadStage(key, btn);
+            btn.dataset.stepKey = key;
             buttonContainer.appendChild(btn);
         });
 
+        function setCycleProgress(index) {
+            const pct = stepKeys.length ? ((index + 1) / stepKeys.length) * 100 : 0;
+            document.getElementById('cycleProgress').style.width = pct + '%';
+        }
+
         function loadStage(stageKey, activeBtn) {
-            // UI State management
             document.getElementById('emptyState').classList.add('hidden');
             document.getElementById('resultsArea').classList.remove('hidden');
-            
-            // Highlight active button
             document.querySelectorAll('#stepButtons button').forEach(b => {
                 b.classList.remove('bg-indigo-100', 'text-indigo-800', 'border-indigo-200');
                 b.classList.add('hover:bg-indigo-50', 'text-slate-700');
@@ -207,13 +564,80 @@
             activeBtn.classList.remove('hover:bg-indigo-50', 'text-slate-700');
             activeBtn.classList.add('bg-indigo-100', 'text-indigo-800', 'border-indigo-200');
 
-            // Populate data
             const data = workflowData[stageKey];
-            document.getElementById('appSignal').innerText = `"${data.signal}"`;
-            document.getElementById('dosList').innerHTML = data.dos.map(d => `<li>${d}</li>`).join('');
-            document.getElementById('dontsList').innerHTML = data.donts.map(d => `<li>${d}</li>`).join('');
-            document.getElementById('primaryStandard').innerText = data.standard;
-            document.getElementById('legalBasis').innerText = data.basis;
+            const idx = stepKeys.indexOf(stageKey);
+            setCycleProgress(idx);
+
+            document.getElementById('appSignal').textContent = '"' + data.signal + '"';
+            document.getElementById('dosList').innerHTML = data.dos.map(d => '<li>' + d + '</li>').join('');
+            document.getElementById('dontsList').innerHTML = data.donts.map(d => '<li>' + d + '</li>').join('');
+            document.getElementById('primaryStandard').textContent = data.standard;
+            document.getElementById('legalBasis').textContent = data.basis;
+            document.getElementById('rationaleBody').innerHTML = data.rationale;
+            const det = document.getElementById('rationalePanel');
+            if (det && !det.open) det.open = true;
+        }
+
+        // Tabs
+        document.querySelectorAll('.main-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const id = tab.getAttribute('data-tab');
+                document.querySelectorAll('.main-tab').forEach(t => {
+                    t.classList.remove('tab-active', 'bg-indigo-50', 'text-indigo-800', 'border-indigo-300');
+                    t.classList.add('text-slate-600');
+                });
+                tab.classList.add('tab-active');
+                tab.classList.remove('text-slate-600');
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+                const panel = document.getElementById('panel-' + id);
+                if (panel) panel.classList.remove('hidden');
+            });
+        });
+
+        // Fairness flip
+        document.getElementById('fairnessFlipBtn')?.addEventListener('click', () => {
+            const n = document.getElementById('fairnessFlipNote');
+            n.classList.toggle('hidden');
+        });
+
+        // Flashcards
+        const flashcards = [
+            { q: 'Name 3 of the 7 GDPR principles.', a: 'Examples: lawfulness/fairness/transparency; purpose limitation; minimization; accuracy; storage limitation; security; accountability.' },
+            { q: 'What is k-anonymity (intuition)?', a: 'Each combination of quasi-identifiers appears at least k times so individuals blend into an equivalence class.' },
+            { q: 'What is HARKing?', a: 'Hypothesizing After Results are Known—retrofitting a hypothesis to fit findings, inflating false positives.' },
+            { q: 'Fairness paradox: name two of the three fairness goals that conflict when base rates differ.', a: 'Calibration (predictive parity), equal false positive rates, equal false negative rates—cannot all hold generally.' },
+            { q: 'Why did Amazon’s resume screening model fail on gender fairness?', a: 'Training on past hires encoded historical bias; proxies carried gender information even when gender fields were removed.' },
+            { q: 'Contractualism (Scanlon) in one line.', a: 'Could you justify this action to others on grounds they could reasonably accept?' },
+            { q: 'What is the “privacy golden rule”?', a: 'Best protection is not to collect data; if you must, collect only what you need.' },
+            { q: 'Transparency paradox?', a: 'More legal detail can increase formal transparency while reducing the chance people read or understand consent.' }
+        ];
+        let fcIdx = 0;
+        const fcEl = document.getElementById('flashcard');
+        function renderCard() {
+            document.getElementById('fcFront').textContent = flashcards[fcIdx].q;
+            document.getElementById('fcBack').textContent = flashcards[fcIdx].a;
+            document.getElementById('fcIndex').textContent = (fcIdx + 1) + ' / ' + flashcards.length;
+            fcEl.classList.remove('flipped');
+        }
+        renderCard();
+        fcEl.addEventListener('click', () => fcEl.classList.toggle('flipped'));
+        fcEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fcEl.classList.toggle('flipped'); }
+        });
+        document.getElementById('fcPrev').addEventListener('click', e => { e.stopPropagation(); fcIdx = (fcIdx - 1 + flashcards.length) % flashcards.length; renderCard(); });
+        document.getElementById('fcNext').addEventListener('click', e => { e.stopPropagation(); fcIdx = (fcIdx + 1) % flashcards.length; renderCard(); });
+
+        document.getElementById('scenarioSelect').addEventListener('change', function () {
+            const v = this.value;
+            const fb = document.getElementById('scenarioFeedback');
+            if (v === 'right') fb.textContent = 'Yes: treat re-identification as a real risk—minimize fields, statistical disclosure control, governance review, and documented residual risk.';
+            else if (v === 'wrong1') fb.textContent = 'Risky: premature release can harm subjects; fix controls and legal basis first.';
+            else if (v === 'wrong2') fb.textContent = 'Not sufficient: quasi-identifiers often re-identify (Sweeney-style attacks).';
+            else fb.textContent = '';
+        });
+
+        if (buttonContainer.firstElementChild) {
+            buttonContainer.firstElementChild.click();
         }
     </script>
 </body>
