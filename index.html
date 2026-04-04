@@ -10,6 +10,9 @@
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         .tab-active { border-color: rgb(99 102 241); background: rgb(238 242 255); color: rgb(55 48 163); }
+        .step-dot-active { background: rgb(79 70 229) !important; transform: scale(1.15); }
+        .xai-pill { transition: background .2s, border-color .2s; }
+        .xai-pill.is-on { background: rgb(238 242 255); border-color: rgb(165 180 252); }
         .card-flip { perspective: 1000px; }
         .card-flip-inner { transition: transform 0.55s ease; transform-style: preserve-3d; }
         .card-flip.flipped .card-flip-inner { transform: rotateY(180deg); }
@@ -31,7 +34,7 @@
                 <span class="text-sm text-slate-400 mt-1 block">Decision support for lawful, fair, and defensible analytics</span>
             </div>
             <div class="text-xs font-mono bg-slate-800 p-2 rounded text-slate-300 border border-slate-700 max-w-md text-right">
-                COVERAGE: GDPR · Scientific integrity · Fair ML · AI governance
+                COVERAGE: GDPR · XAI · Fair ML · Scientific integrity · Governance
             </div>
         </div>
 
@@ -43,6 +46,7 @@
             <button type="button" data-tab="fairness" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white">Bias &amp; fairness</button>
             <button type="button" data-tab="rigor" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white">Rigorous analysis</button>
             <button type="button" data-tab="ai-risk" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white">AI risk &amp; foresight</button>
+            <button type="button" data-tab="xai" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white"><i class="fas fa-eye mr-1"></i> XAI &amp; accountability</button>
             <button type="button" data-tab="quiz" class="main-tab px-3 py-2 rounded-lg text-sm font-medium border-2 border-transparent whitespace-nowrap text-slate-600 hover:bg-white"><i class="fas fa-bolt mr-1"></i> Quick checks</button>
         </div>
 
@@ -51,7 +55,12 @@
             <div class="grid grid-cols-1 lg:grid-cols-4 min-h-[560px]">
                 <div class="lg:col-span-1 bg-slate-100 border-r border-slate-200 p-4">
                     <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">AI data governance cycle</h2>
-                    <p class="text-xs text-slate-500 mb-4">Select a stage, then open <strong>Rationale &amp; context</strong> for deeper guidance on that step.</p>
+                    <p class="text-xs text-slate-500 mb-3">Select a stage, then open <strong>Rationale &amp; context</strong>. Use <kbd class="px-1 bg-slate-200 rounded text-[10px]">←</kbd> <kbd class="px-1 bg-slate-200 rounded text-[10px]">→</kbd> when this tab is active.</p>
+                    <div class="flex items-center gap-2 mb-2">
+                        <button type="button" id="cyclePrev" class="flex-1 px-2 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200" title="Previous step">← Prev</button>
+                        <button type="button" id="cycleNext" class="flex-1 px-2 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200" title="Next step">Next →</button>
+                    </div>
+                    <div id="stepDots" class="flex flex-wrap gap-1.5 justify-center mb-3 min-h-[1.25rem]" aria-hidden="true"></div>
                     <div class="w-full bg-slate-200 rounded-full h-1.5 mb-4">
                         <div id="cycleProgress" class="bg-indigo-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
@@ -379,6 +388,79 @@
             </div>
         </div>
 
+        <!-- XAI & accountability (Explainable AI) -->
+        <div id="panel-xai" class="tab-panel hidden p-6 lg:p-8 space-y-6">
+            <h2 class="text-xl font-bold text-slate-800">Explainable AI (XAI) &amp; accountability</h2>
+            <p class="text-sm text-slate-600 max-w-3xl">Transparency tools help people <strong>interrogate</strong> decisions—they do not, by themselves, guarantee fairness, legality, or good outcomes. Pair explanations with governance, testing, and clear ownership.</p>
+
+            <div class="grid lg:grid-cols-2 gap-6">
+                <div class="bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-5 shadow-sm">
+                    <h3 class="font-bold text-violet-900 mb-3 flex items-center gap-2"><i class="fas fa-crosshairs"></i> Who needs the explanation?</h3>
+                    <p class="text-xs text-violet-800 mb-3">Pick a primary audience—the app highlights matching practices.</p>
+                    <div class="flex flex-wrap gap-2" id="xaiAudiencePills" role="radiogroup" aria-label="Explanation audience">
+                        <button type="button" class="xai-pill px-3 py-1.5 rounded-full text-xs font-medium border border-violet-200 bg-white text-violet-900" data-audience="affected">Affected person</button>
+                        <button type="button" class="xai-pill px-3 py-1.5 rounded-full text-xs font-medium border border-violet-200 bg-white text-violet-900" data-audience="auditor">Regulator / auditor</button>
+                        <button type="button" class="xai-pill px-3 py-1.5 rounded-full text-xs font-medium border border-violet-200 bg-white text-violet-900" data-audience="engineer">Engineer (debug)</button>
+                        <button type="button" class="xai-pill px-3 py-1.5 rounded-full text-xs font-medium border border-violet-200 bg-white text-violet-900" data-audience="public">Public / comms</button>
+                    </div>
+                    <div id="xaiAudienceOut" class="mt-4 text-sm text-slate-800 bg-white/80 rounded-lg p-4 border border-violet-100 min-h-[7rem]"></div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                    <h3 class="font-bold text-slate-800 mb-2">Interpretability vs. explanation</h3>
+                    <ul class="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                        <li><strong>Intrinsic interpretability</strong> — sparse linear models, shallow trees, explicit rules: structure is readable by design.</li>
+                        <li><strong>Post-hoc explanation</strong> — approximations of a complex model’s behavior for an instance or cohort (e.g., local surrogates, attributions).</li>
+                    </ul>
+                    <label class="block text-xs font-semibold text-slate-600 mt-4 mb-1">Stress test: model complexity vs. direct readability</label>
+                    <input type="range" id="xaiComplexity" min="0" max="100" value="50" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                    <p id="xaiComplexityOut" class="text-sm text-slate-700 mt-2"></p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-3">Methods toolbox (tap to expand)</h3>
+                <div class="grid md:grid-cols-2 gap-3">
+                    <details class="border rounded-lg p-3 bg-slate-50 open:bg-indigo-50/50">
+                        <summary class="font-semibold cursor-pointer text-indigo-900">LIME · local surrogate</summary>
+                        <p class="text-sm text-slate-700 mt-2">Fits a simple interpretable model <em>near</em> a prediction to explain that instance. Sensitive to perturbation design and neighborhood—can be unstable across nearby points.</p>
+                    </details>
+                    <details class="border rounded-lg p-3 bg-slate-50 open:bg-indigo-50/50">
+                        <summary class="font-semibold cursor-pointer text-indigo-900">SHAP · Shapley-style attributions</summary>
+                        <p class="text-sm text-slate-700 mt-2">Assigns each feature a contribution based on game-theoretic averaging over coalitions. Useful for comparisons; still depends on modeling assumptions and computational choices.</p>
+                    </details>
+                    <details class="border rounded-lg p-3 bg-slate-50 open:bg-indigo-50/50">
+                        <summary class="font-semibold cursor-pointer text-indigo-900">Counterfactual / contrastive</summary>
+                        <p class="text-sm text-slate-700 mt-2">“What minimal change would flip this outcome?”—often actionable for affected users. Must check feasibility and whether the model surface is well-behaved.</p>
+                    </details>
+                    <details class="border rounded-lg p-3 bg-slate-50 open:bg-indigo-50/50">
+                        <summary class="font-semibold cursor-pointer text-indigo-900">Global / partial dependence</summary>
+                        <p class="text-sm text-slate-700 mt-2">Shows average prediction vs. a feature (marginal effects). Can hide interactions; combine with cohort analysis and fairness metrics.</p>
+                    </details>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <h3 class="font-bold text-amber-900 mb-2">Law &amp; rights (GDPR-style)</h3>
+                    <p class="text-sm text-amber-950">Article 22: meaningful information about the logic involved, plus safeguards—especially when decisions are <strong>solely automated</strong> and produce legal or similarly significant effects. Explanations support transparency, not a substitute for substantive review or appeal rights.</p>
+                </div>
+                <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+                    <h3 class="font-bold text-red-900 mb-2">Accountability limits</h3>
+                    <ul class="text-sm text-red-950 list-disc pl-5 space-y-1">
+                        <li>Explanations can be <strong>approximate</strong> or unfaithful to the deployed model.</li>
+                        <li>“Explainable” does not imply <strong>fair</strong>—bias can live in labels and features.</li>
+                        <li>Documentation (model cards, datasheets) shifts responsibility to <strong>process</strong>—still need owners and redress.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border border-indigo-200 rounded-xl p-5 bg-indigo-50/40">
+                <h3 class="font-bold text-indigo-900 mb-3">Quick true / false</h3>
+                <div class="space-y-3" id="xaiTfContainer"></div>
+            </div>
+        </div>
+
         <!-- TAB: Quiz -->
         <div id="panel-quiz" class="tab-panel hidden p-6 lg:p-8">
             <h2 class="text-xl font-bold text-slate-800 mb-2">Quick checks (flashcards)</h2>
@@ -525,6 +607,7 @@
                 dos: [
                     'ABCDEF-style communication: acknowledge goals, clarify, connect to values, reduce uncertainty, common ground, follow up.',
                     'For AI risk: distinguish doom/gloom/zoom/bloom framings; clarify which near-term harms you mitigate.',
+                    'Where models affect people, point to explainability artifacts and redress paths (see Step 8).',
                     'Assign ownership—algorithms do not absolve responsibility.'
                 ],
                 donts: [
@@ -535,11 +618,32 @@
                 basis: 'Context-sensitive ethics; AI risk framing & structured forecasting habits',
                 rationale: `<p><strong>Governance reality:</strong> black-box risk, liability gaps, regulatory lag—say so explicitly.</p>
                 <p><strong>Foresight:</strong> granular probabilities, update with evidence, team critique.</p>`
+            },
+            step8: {
+                title: 'Step 8: Explainability & accountability',
+                signal: 'Can affected people and overseers understand enough to contest, audit, or safely rely on this system?',
+                dos: [
+                    'Tailor explanations to the audience: rights and redress language for users; process and controls for auditors; fidelity checks for engineers.',
+                    'Publish model cards / datasheets: intent, data, metrics, limitations, and contact for escalation.',
+                    'Stress-test explanations (stability, faithfulness) for the decisions that matter most.'
+                ],
+                donts: [
+                    'Do not treat feature attributions as proof of fairness or non-discrimination.',
+                    'Do not use “the model explained itself” to avoid human accountability or appeals.',
+                    'Do not confuse transparency tooling with ethical clearance—explainability is not a substitute for impact assessment.'
+                ],
+                standard: 'Explanations support oversight; name owners for errors, updates, and affected-person redress.',
+                basis: 'GDPR Art. 22 (meaningful information, safeguards); XAI & accountability practice',
+                rationale: `<p><strong>Interpretability vs. explanation:</strong> simple models vs. post-hoc summaries (LIME, SHAP, counterfactuals)—each answers different questions.</p>
+                <p><strong>Limits:</strong> explanations can be unstable or misleading; they rarely fix biased labels or bad deployment choices alone.</p>
+                <p><strong>Pair with:</strong> monitoring, incident response, documented appeals, and clear legal/ethical ownership.</p>`
             }
         };
 
+        let activeStepKey = 'step1';
         const stepKeys = Object.keys(workflowData);
         const buttonContainer = document.getElementById('stepButtons');
+        const dotsContainer = document.getElementById('stepDots');
         stepKeys.forEach((key, i) => {
             const btn = document.createElement('button');
             btn.className = 'w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2';
@@ -547,6 +651,28 @@
             btn.onclick = () => loadStage(key, btn);
             btn.dataset.stepKey = key;
             buttonContainer.appendChild(btn);
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'step-dot w-2.5 h-2.5 rounded-full bg-slate-300 hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all';
+            dot.setAttribute('aria-label', 'Go to step ' + (i + 1));
+            dot.addEventListener('click', () => buttonContainer.children[i].click());
+            dotsContainer.appendChild(dot);
+        });
+
+        function goStep(delta) {
+            const idx = (stepKeys.indexOf(activeStepKey) + delta + stepKeys.length) % stepKeys.length;
+            const btn = buttonContainer.children[idx];
+            if (btn) btn.click();
+        }
+        document.getElementById('cyclePrev').addEventListener('click', () => goStep(-1));
+        document.getElementById('cycleNext').addEventListener('click', () => goStep(1));
+        document.addEventListener('keydown', (e) => {
+            const panel = document.getElementById('panel-cycle');
+            if (!panel || panel.classList.contains('hidden')) return;
+            const t = e.target;
+            if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+            if (e.key === 'ArrowLeft') { e.preventDefault(); goStep(-1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); goStep(1); }
         });
 
         function setCycleProgress(index) {
@@ -564,9 +690,13 @@
             activeBtn.classList.remove('hover:bg-indigo-50', 'text-slate-700');
             activeBtn.classList.add('bg-indigo-100', 'text-indigo-800', 'border-indigo-200');
 
+            activeStepKey = stageKey;
             const data = workflowData[stageKey];
             const idx = stepKeys.indexOf(stageKey);
             setCycleProgress(idx);
+            document.querySelectorAll('#stepDots .step-dot').forEach((d, i) => {
+                d.classList.toggle('step-dot-active', i === idx);
+            });
 
             document.getElementById('appSignal').textContent = '"' + data.signal + '"';
             document.getElementById('dosList').innerHTML = data.dos.map(d => '<li>' + d + '</li>').join('');
@@ -609,7 +739,11 @@
             { q: 'Why did Amazon’s resume screening model fail on gender fairness?', a: 'Training on past hires encoded historical bias; proxies carried gender information even when gender fields were removed.' },
             { q: 'Contractualism (Scanlon) in one line.', a: 'Could you justify this action to others on grounds they could reasonably accept?' },
             { q: 'What is the “privacy golden rule”?', a: 'Best protection is not to collect data; if you must, collect only what you need.' },
-            { q: 'Transparency paradox?', a: 'More legal detail can increase formal transparency while reducing the chance people read or understand consent.' }
+            { q: 'Transparency paradox?', a: 'More legal detail can increase formal transparency while reducing the chance people read or understand consent.' },
+            { q: 'Do SHAP or LIME scores prove fairness?', a: 'No—they explain behavior under assumptions; fairness needs separate tests on data, labels, and errors across groups.' },
+            { q: 'Intrinsic interpretability vs post-hoc explanation?', a: 'Intrinsic: model is simple by design. Post-hoc: trained model is complex; LIME/SHAP etc. summarize it afterward.' },
+            { q: 'What is a counterfactual explanation (in one line)?', a: 'The smallest change to inputs that would flip (or meaningfully change) the prediction—useful for actionable user-facing messaging.' },
+            { q: 'Does GDPR-style “meaningful information” replace ethics review?', a: 'No—it supports transparency and safeguards; ethics and impact review remain separate obligations.' }
         ];
         let fcIdx = 0;
         const fcEl = document.getElementById('flashcard');
@@ -634,6 +768,75 @@
             else if (v === 'wrong1') fb.textContent = 'Risky: premature release can harm subjects; fix controls and legal basis first.';
             else if (v === 'wrong2') fb.textContent = 'Not sufficient: quasi-identifiers often re-identify (Sweeney-style attacks).';
             else fb.textContent = '';
+        });
+
+        const xaiAudienceCopy = {
+            affected: 'Prioritize plain language, meaningful information about logic, and paths to human review or appeal. Where feasible, offer counterfactuals (“what would change this outcome?”).',
+            auditor: 'Provide process evidence: data provenance, validation and fairness tests, change logs, monitoring, and who signs off on releases.',
+            engineer: 'Use attributions with sensitivity checks; compare surrogate fidelity to the deployed model; watch for data leakage; version models and evaluations.',
+            public: 'Avoid jargon; separate how the system works from marketing; disclose uncertainty, limitations, and known failure modes.'
+        };
+        let xaiAudience = 'affected';
+        function renderXaiAudience() {
+            const out = document.getElementById('xaiAudienceOut');
+            if (out) out.textContent = xaiAudienceCopy[xaiAudience] || '';
+            document.querySelectorAll('#xaiAudiencePills .xai-pill').forEach(p => {
+                p.classList.toggle('is-on', p.dataset.audience === xaiAudience);
+            });
+        }
+        document.querySelectorAll('#xaiAudiencePills .xai-pill').forEach(p => {
+            p.addEventListener('click', () => {
+                xaiAudience = p.dataset.audience;
+                renderXaiAudience();
+            });
+        });
+        renderXaiAudience();
+
+        function updateXaiComplexity() {
+            const v = +document.getElementById('xaiComplexity').value;
+            const el = document.getElementById('xaiComplexityOut');
+            if (!el) return;
+            if (v < 34) el.textContent = 'Lower complexity: simpler structures may be directly auditable—watch oversimplification and underfitting.';
+            else if (v < 67) el.textContent = 'Mixed regime: common in production—pair post-hoc tools with monitoring; validate that explanations reflect deployed behavior.';
+            else el.textContent = 'Higher complexity: expect approximate explanations—invest in stress tests, red-teaming, and human review for high-stakes decisions.';
+        }
+        document.getElementById('xaiComplexity').addEventListener('input', updateXaiComplexity);
+        updateXaiComplexity();
+
+        const xaiTfItems = [
+            { text: 'SHAP values alone prove the model is fair.', ok: false },
+            { text: 'Meaningful information about automated logic can be part of regulatory safeguards.', ok: true },
+            { text: 'A clear explanation removes the need for fairness testing.', ok: false },
+            { text: 'Post-hoc explanations are always perfectly faithful to the underlying model.', ok: false }
+        ];
+        const tfBox = document.getElementById('xaiTfContainer');
+        xaiTfItems.forEach((item, i) => {
+            const row = document.createElement('div');
+            row.className = 'flex flex-wrap items-start gap-2 text-sm border-b border-indigo-100 pb-3 last:border-0 last:pb-0';
+            const label = document.createElement('span');
+            label.className = 'text-slate-800 flex-1 min-w-[180px]';
+            label.textContent = (i + 1) + '. ' + item.text;
+            row.appendChild(label);
+            const fb = document.createElement('span');
+            fb.className = 'text-xs text-slate-500 min-w-[7rem] order-3 sm:order-none w-full sm:w-auto';
+            row.appendChild(fb);
+            const btns = document.createElement('div');
+            btns.className = 'flex gap-1 shrink-0';
+            ['True', 'False'].forEach(labelText => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'px-2 py-1 rounded border border-slate-300 bg-white text-xs hover:bg-indigo-50';
+                b.textContent = labelText;
+                b.addEventListener('click', () => {
+                    const userTrue = labelText === 'True';
+                    const correct = userTrue === item.ok;
+                    fb.textContent = correct ? 'Correct.' : 'Review the panels above.';
+                    fb.className = 'text-xs min-w-[7rem] order-3 sm:order-none w-full sm:w-auto ' + (correct ? 'text-emerald-700' : 'text-amber-700');
+                });
+                btns.appendChild(b);
+            });
+            row.appendChild(btns);
+            tfBox.appendChild(row);
         });
 
         if (buttonContainer.firstElementChild) {
